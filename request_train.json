@@ -1,0 +1,21 @@
+{
+	"model" : "some_id",
+	"vr_configuration": "some_id",
+	"modification": "some_id",
+	"criterion" : {
+		"Q1" : "Q1Option1",
+		"Q2" : "Q2Option1",
+		"Q3" : "Q3Option3",
+		"Q4" : "Q4Option2",
+		"Q5" : "Q5Option1",
+		"Q6" : "Q6Option3",
+		"Q7" : 7,
+		"Q8" : "Q8Option1",
+		"Q9" : "Q9Option2",
+		"Q10" : "Q10Option14",
+		"Q11" : 32,
+		"Q12" : 182,
+		"Q13" : 90,
+		"Q14" : "Q14Option1"
+	}
+}
