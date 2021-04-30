@@ -509,3 +509,4 @@ API.add_resource(GetTaskStatus, '/status/<task_id>')
 
 if __name__ == '__main__':
     server.run(host="0.0.0.0", debug=True, port='5000', threaded=True)
+    #server.run(host="0.0.0.0", debug=True, port='10402', threaded=True)
