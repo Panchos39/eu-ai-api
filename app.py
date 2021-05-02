@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from flask import Flask, g, abort, current_app, request, url_for
+from flask import Flask, g, abort, current_app, request, url_for, jsonify
 from flask_restful import Api, Resource, reqparse
 from werkzeug.exceptions import HTTPException, InternalServerError
 import joblib
@@ -63,8 +63,13 @@ def async_api(wrapped_function):
                     # collecting old tasks
                     tasks[task_id]['completion_timestamp'] = datetime.timestamp(datetime.utcnow())
 
-                    # close the database session (if any)
-
+                   	# close the database session (if any)
+        
+        headers = request.headers 
+        auth = headers.get("X-Authorization")
+         
+        if auth != 'asoidewfoef':
+            return {"message": "ERROR: Unauthorized"}, 202
         # Assign an id to the asynchronous task
         task_id = uuid.uuid4().hex
         # Record the task, and then launch it
@@ -78,7 +83,7 @@ def async_api(wrapped_function):
         #print(url_for('gettaskstatus', task_id=task_id))
         #return 'accepted', 202, {'Location': '/status/' + str(task_id)}
         # Return a 202 response, with an id that the client can use to obtain task status
-        return {'test_session_id': task_id}, 202
+        return {'request_id': task_id}, 202
     return new_function
 
 class GetTaskStatus(Resource):
@@ -88,12 +93,17 @@ class GetTaskStatus(Resource):
         status code, it means that task hasn't finished yet. Else, the response
         from the task is returned.
         """
+        headers = request.headers 
+        auth = headers.get("X-Authorization")
+         
+        if auth != 'asoidewfoef':
+            return {"message": "ERROR: Unauthorized"}, 202
         task = tasks.get(task_id)
         if task is None:
             abort(404)
         if 'return_value' not in task:
             # Return a 202 response, with an id that the client can use to obtain task status
-            return {'test_session_id': task_id}, 202
+            return {'status': "In-Progress"}, 202
             #return '', 202, {'Location': url_for('gettaskstatus', task_id=task_id)}
         return task['return_value']
 
@@ -468,8 +478,8 @@ class AnalysisComplex(Resource) :
 
 class Score(Resource):
 
-    @staticmethod
-    def post():
+    @async_api
+    def post(self, uid):
         parser = reqparse.RequestParser()
         parser.add_argument('model')
         parser.add_argument('vr_configuration')
@@ -482,7 +492,7 @@ class Score(Resource):
         args = parser.parse_args()  # creates dict
 
         #X_new = np.fromiter(args.values(), dtype=float)  # convert input to array
-
+        time.sleep(10)
         out = {
             'status': 'Completed',
             'competence_evals' : {
@@ -499,14 +509,16 @@ class Score(Resource):
 
 
 
-API.add_resource(Score, '/score')
-API.add_resource(Train, '/train')
+API.add_resource(Score, '/test_sessions/<string:uid>/score')
+#API.add_resource(Score, '/score')
+API.add_resource(Train, '/train/request')
 API.add_resource(AnalysisVR, '/analysis/vr')
 API.add_resource(AnalysisBio,'/analysis/bio')
 API.add_resource(AnalysisComplex, '/analysis/complex')
 #API.add_resource(CatchAll, '/<path:path>', '/')
-API.add_resource(GetTaskStatus, '/status/<task_id>')
+API.add_resource(GetTaskStatus, '/status/<task_id>', '/test_sessions/score/<task_id>', 
+								'/train/<task_id>', '/analysis/<task_id>')
 
 if __name__ == '__main__':
-    server.run(host="0.0.0.0", debug=True, port='5000', threaded=True)
-    #server.run(host="0.0.0.0", debug=True, port='10402', threaded=True)
+    #server.run(host="0.0.0.0", debug=True, port='5000', threaded=True)
+    server.run(host="0.0.0.0", debug=True, port='10402', threaded=True)
