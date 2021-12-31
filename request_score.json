@@ -11,14 +11,20 @@
 		"Q4" : "Q4Option2",
 		"Q5" : "Q5Option1",
 		"Q6" : "Q6Option3",
-		"Q7" : "7",
+		"Q7" : 7,
 		"Q8" : "Q8Option1",
 		"Q9" : "Q9Option2",
 		"Q10" : "Q10Option14",
-		"Q11" : "32",
-		"Q12" : "182",
-		"Q13" : "90",
+		"Q11" : 32,
+		"Q12" : 182,
+		"Q13" : 90,
 		"Q14" : "Q14Option1"
+	},
+	"hr_feedback" : {
+		"self-confidence" : 3,
+		"self-control" : 3,
+		"openness_to_change" : 3,
+		"responsibility" : 3,
+		"communicability" : 3
 	}
-	
 }

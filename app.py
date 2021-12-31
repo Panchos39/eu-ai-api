@@ -10,6 +10,11 @@ from functools import wraps
 import threading
 import time
 import uuid
+import requests
+import json
+from utils import *
+from pymongo import MongoClient
+from pprint import pprint
 
 server = Flask(__name__)
 API = Api(server)
@@ -17,7 +22,7 @@ API = Api(server)
 #IRIS_MODEL = joblib.load('/home/user/eu_workspace/eu-ai-api/iris.mdl')
 
 tasks = {}
-
+'''
 @server.before_first_request
 def before_first_request():
     """Start a background thread that cleans up old tasks."""
@@ -38,7 +43,7 @@ def before_first_request():
         #print('TESTING')
         thread = threading.Thread(target=clean_old_tasks)
         thread.start()
-
+'''
 
 def async_api(wrapped_function):
     @wraps(wrapped_function)
@@ -103,7 +108,7 @@ class GetTaskStatus(Resource):
             abort(404)
         if 'return_value' not in task:
             # Return a 202 response, with an id that the client can use to obtain task status
-            return {'status': "In-Progress"}, 202
+            return {'status': "in progress"}, 202
             #return '', 202, {'Location': url_for('gettaskstatus', task_id=task_id)}
         return task['return_value']
 
@@ -130,7 +135,7 @@ class Train(Resource):
         #X_new = np.fromiter(args.values(), dtype=float)  # convert input to array
         time.sleep(10)
         out = {
-            'status': 'Completed',
+            'status': 'completed',
             'metrics' : {
                 "accuracy" : 0.88,
                 "precision" : 0.77,
@@ -153,76 +158,265 @@ class AnalysisVR(Resource) :
         #X_new = np.fromiter(args.values(), dtype=float)  # convert input to array
         time.sleep(10)
         out = {
-            'status' : 'Completed',
-            'shapely_evals' :
+            'status' : 'completed',
+            'scenarios' :
             [
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 }
-                ],
-                [   { "1" :   0.58 },
-                    { "1.1" : 0.58 },
-                    { "1.2" : 0.58 },
-                    { "2.1" : 0.58 },
-                    { "2.2" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 },
-                    { "7" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 }
-                ]
+                {
+                    "name": "1",
+                    "scenes" : 
+                    [
+                        { 
+                            "name" : "1",
+                            "value"  : 0.58 
+                        },
+                        { 
+                            "name" : "2",
+                            "value": 0.58 
+                        },
+                        { 
+                            "name" : "3",  
+                            "value": 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "2",
+                    "scenes" :
+                    [
+                        
+                        { 
+                            "name" : "1", 
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "1.1", 
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "1.2", 
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "2.1", 
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "2.2",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "3",
+                    "scenes" :
+                    [
+
+                        {
+                            "name" : "1",
+                            "value": 0.58 
+                        },
+                        {
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {   "name" : "3",
+                            "value": 0.58 
+                        },
+                        { 
+                            "name" :"4",
+                            "value" : 0.58 },
+                        {
+                            "name": "5",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "6",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "7",
+                            "value": 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "4",
+                    "scenes" :
+                    [
+
+                        {
+                            "name" : "1",
+                            "value": 0.58 
+                        },
+                        {
+                            "name" :"2", 
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3", 
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "4",
+                            "value": 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "5",
+                    "scenes" :
+                    [
+                    
+                        {
+                            "name" : "1",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3",
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "4",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "5",
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "6", 
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "6",
+                    "scenes" :
+                    [
+                    
+                        {
+                            "name" : "1",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "4",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "5",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "6",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "7",
+                    "scenes" : 
+                    [
+                        {
+                            "name": "1",
+                            "value" : 0.58 
+                        },  
+                        { 
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "4",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "5",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "8",
+                    "scenes" :
+                    [
+                        {
+                            "name" : "1",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" :  "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "4",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "5",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "9",
+                    "scenes" :
+                    [
+                        {
+                            "name" :  "1",
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name"  : "3",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "10",
+                    "scenes" : 
+                    [
+                        {
+                            "name" : "1",
+                            "value": 0.58 
+                        },
+                    
+                        {
+                            "name" : "2",
+                            "value": 0.58
+                        },
+                        {
+                            "name" : "3",
+                            "value": 0.58 
+                        },
+                        {
+                            "name"  : "4",
+                            "value" : 0.58 
+                        }
+                    ]
+                }
             ]
         }
         return out
@@ -241,77 +435,265 @@ class AnalysisBio(Resource) :
         #X_new = np.fromiter(args.values(), dtype=float)  # convert input to array
         time.sleep(10)
         out = {
-            'status' : 'Completed',
-            "empathy_evals" :
+            'status' : 'completed',
+            'scenarios' :
             [
+                {
+                    "name": "1",
+                    "scenes" : 
+                    [
+                        { 
+                            "name" : "1",
+                            "value"  : 0.58 
+                        },
+                        { 
+                            "name" : "2",
+                            "value": 0.58 
+                        },
+                        { 
+                            "name" : "3",  
+                            "value": 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "2",
+                    "scenes" :
+                    [
+                        
+                        { 
+                            "name" : "1", 
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "1.1", 
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "1.2", 
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "2.1", 
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "2.2",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "3",
+                    "scenes" :
+                    [
 
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 }
-                ],
-                [   { "1" :   0.58 },
-                    { "1.1" : 0.58 },
-                    { "1.2" : 0.58 },
-                    { "2.1" : 0.58 },
-                    { "2.2" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 },
-                    { "7" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 }
-                ]
+                        {
+                            "name" : "1",
+                            "value": 0.58 
+                        },
+                        {
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {   "name" : "3",
+                            "value": 0.58 
+                        },
+                        { 
+                            "name" :"4",
+                            "value" : 0.58 },
+                        {
+                            "name": "5",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "6",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "7",
+                            "value": 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "4",
+                    "scenes" :
+                    [
+
+                        {
+                            "name" : "1",
+                            "value": 0.58 
+                        },
+                        {
+                            "name" :"2", 
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3", 
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "4",
+                            "value": 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "5",
+                    "scenes" :
+                    [
+                    
+                        {
+                            "name" : "1",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3",
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "4",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "5",
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "6", 
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "6",
+                    "scenes" :
+                    [
+                    
+                        {
+                            "name" : "1",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "4",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "5",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "6",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "7",
+                    "scenes" : 
+                    [
+                        {
+                            "name": "1",
+                            "value" : 0.58 
+                        },  
+                        { 
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "4",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "5",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "8",
+                    "scenes" :
+                    [
+                        {
+                            "name" : "1",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" :  "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "3",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "4",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name" : "5",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "9",
+                    "scenes" :
+                    [
+                        {
+                            "name" :  "1",
+                            "value" : 0.58 
+                        },
+                        { 
+                            "name" : "2",
+                            "value" : 0.58 
+                        },
+                        {
+                            "name"  : "3",
+                            "value" : 0.58 
+                        }
+                    ]
+                },
+                {
+                    "name" : "10",
+                    "scenes" : 
+                    [
+                        {
+                            "name" : "1",
+                            "value": 0.58 
+                        },
+                    
+                        {
+                            "name" : "2",
+                            "value": 0.58
+                        },
+                        {
+                            "name" : "3",
+                            "value": 0.58 
+                        },
+                        {
+                            "name"  : "4",
+                            "value" : 0.58 
+                        }
+                    ]
+                }
             ]
         }
         return out
@@ -330,148 +712,314 @@ class AnalysisComplex(Resource) :
         #X_new = np.fromiter(args.values(), dtype=float)  # convert input to array
         time.sleep(10)
         out = {
-            'status' : 'Completed',
-            'shapely_evals' :
+            'status' : 'completed',
+            'scenarios' :
             [
+                {
+                    "name": "1",
+                    "scenes" : 
+                    [
+                        { 
+                            "name" : "1",
+                            "vr_value"  : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" : "2",
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" : "3",  
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                },
+                {
+                    "name" : "2",
+                    "scenes" :
+                    [
+                        
+                        { 
+                            "name" : "1", 
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" : "1.1", 
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" : "1.2", 
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" : "2.1", 
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" : "2.2",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                },
+                {
+                    "name" : "3",
+                    "scenes" :
+                    [
 
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 }
-                ],
-                [   { "1" :   0.58 },
-                    { "1.1" : 0.58 },
-                    { "1.2" : 0.58 },
-                    { "2.1" : 0.58 },
-                    { "2.2" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 },
-                    { "7" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 }
-                ]
-            ],
-            "empathy_evals" :
-            [
+                        {
+                            "name" : "1",
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "2",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {   "name" : "3",
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" :"4",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name": "5",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "6",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "7",
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                },
+                {
+                    "name" : "4",
+                    "scenes" :
+                    [
 
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 }
-                ],
-                [   { "1" :   0.58 },
-                    { "1.1" : 0.58 },
-                    { "1.2" : 0.58 },
-                    { "2.1" : 0.58 },
-                    { "2.2" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 },
-                    { "7" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                    { "6" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 },
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 },
-                    { "5" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 }
-                ],
-                [
-                    { "1" : 0.58 },
-                    { "2" : 0.58 },
-                    { "3" : 0.58 },
-                    { "4" : 0.58 }
-                ]
+                        {
+                            "name" : "1",
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" :"2", 
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "3", 
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "4",
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                },
+                {
+                    "name" : "5",
+                    "scenes" :
+                    [
+                    
+                        {
+                            "name" : "1",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "2",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "3",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" : "4",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "5",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" : "6", 
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                },
+                {
+                    "name" : "6",
+                    "scenes" :
+                    [
+                    
+                        {
+                            "name" : "1",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "2",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "3",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "4",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "5",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "6",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                },
+                {
+                    "name" : "7",
+                    "scenes" : 
+                    [
+                        {
+                            "name": "1",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },  
+                        { 
+                            "name" : "2",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "3",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "4",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "5",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                },
+                {
+                    "name" : "8",
+                    "scenes" :
+                    [
+                        {
+                            "name" : "1",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" :  "2",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "3",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "4",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "5",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                },
+                {
+                    "name" : "9",
+                    "scenes" :
+                    [
+                        {
+                            "name" :  "1",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        { 
+                            "name" : "2",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name"  : "3",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                },
+                {
+                    "name" : "10",
+                    "scenes" : 
+                    [
+                        {
+                            "name" : "1",
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        },
+                    
+                        {
+                            "name" : "2",
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name" : "3",
+                            "vr_value": 0.58,
+                            "empathy_value": 0.77
+                        },
+                        {
+                            "name"  : "4",
+                            "vr_value" : 0.58,
+                            "empathy_value": 0.77
+                        }
+                    ]
+                }
             ]
         }
         return out
@@ -481,44 +1029,103 @@ class Score(Resource):
     @async_api
     def post(self, uid):
         parser = reqparse.RequestParser()
+        parser.add_argument('test_session_id')
         parser.add_argument('model')
         parser.add_argument('vr_configuration')
         parser.add_argument('modification')
         parser.add_argument('vr_big_data_id')
+        parser.add_argument('vr_original_name')
         parser.add_argument('bio_big_data_id')
+        parser.add_argument('bio_original_name')
         parser.add_argument('questionaire')
-        parser.add_argument('hr_feedback')
 
         args = parser.parse_args()  # creates dict
+        
+        url = 'http://64.227.122.210/api/raw-results/'  # localhost and the defined port + endpoint
+        vr_uuid = args['vr_big_data_id']
+        print(vr_uuid)
+        bio_uuid = args['bio_big_data_id']
+        vr = requests.get(url + vr_uuid, headers={"X-Authorization": "EbQPR@%wb$YZM25A"}).text
+        vr_name = args['vr_original_name']
+        if "copy" in vr_name :
+            vr_name = vr_name.split('(')[0] + '.csv'
+        bio_name = args['bio_original_name']
+        if "copy" in bio_name :
+            bio_name = bio_name.split('(')[0] + '.txt'
+        biometry = requests.get(url + bio_uuid, headers={"X-Authorization": "EbQPR@%wb$YZM25A"}).json()
+        #print(biometry)
+        respondent = [get_fusion_evals(vr, biometry, from_memory=True, init_vr_time=vr_name, init_bio_time=bio_name)]
 
-        #X_new = np.fromiter(args.values(), dtype=float)  # convert input to array
-        time.sleep(10)
+        template = ['1_1', '1_2', '1_3', 
+                    '2_1', '2_1.1', '2_1.2', '2_2', '2_2.1', '2_2.2', 
+                    '3_1', '3_2', '3_3', '3_4', '3_5', '3_6', '3_7', 
+                    '4_1', '4_2', '4_3', '4_4', 
+                    '5_1', '5_2', '5_3', '5_4', '5_5', '5_6', 
+                    '6_1', '6_2', '6_3', '6_4', '6_5', '6_6', 
+                    '7_1', '7_2', '7_3', '7_4', '7_5', 
+                    '8_1', '8_2', '8_3', '8_4', '8_5', 
+                    '9_1', '9_2', '9_3', 
+                    '10_1', '10_2', '10_3', '10_4']
+
+        tmp = respondents_to_df(respondent, gen_template(template, ['vr']), only_vr=True)
+        competences = ['Self-confidence', 'Self-control', 'Openness to change', 'Responsibility', 'Communicability']
+        series = []
+        means = []
+        for ix, comp in enumerate(competences) :
+            series.append(pd.Series(list(tmp[0][comp].values())))
+            means.append(series[ix].mean())
+
         out = {
-            'status': 'Completed',
-            'competence_evals' : {
-                "self-confidence" : 2.77,
-                "self-control" : 2.68,
-                "openness_to_change" : 1.81,
-                "responsibility" : 2.99,
-                "communicability" : 2.41
-            }           
-        }
+            "status": "completed",
+            "competence_evals" : {
+                "self-confidence" : means[0],
+                "self-control" : means[1],
+                "openness_to_change" : means[2],
+                "responsibility" : means[3],                                                                                                                                                                                
+                "communicability" : means[4]                                                                                                                                                                            
+            }
+        }           
 
-        return out, 200
+        return out
 
+'''
+class Testdb(Resource):
+    def post(self):
+        # connect to MongoDB, change the << MONGODB URL >> to reflect your own connection string
+        #return {"name" : "gavno"}
+        client = MongoClient('mongodb://root:example@mongo:10403/')
+        #print('gavno________________________________________________________________________________')
+        db=client.aidb
+        collection = db.fruits
+        result = collection.find_one({"name" : "apple"})
+        out = {"name": result["name"], "origin" : result["origin"]}
+        # Issue the serverStatus command and print the results
+        #serverStatusResult=db.command("serverStatus")
+        #out = { "process" : serverStatusResult['process'], "host" : serverStatusResult['host']}
+        
+        return out
+'''
 
-
-
-API.add_resource(Score, '/test_sessions/<string:uid>/score')
+API.add_resource(Score, '/test-sessions/<string:uid>/score')
 #API.add_resource(Score, '/score')
 API.add_resource(Train, '/train/request')
-API.add_resource(AnalysisVR, '/analysis/vr')
-API.add_resource(AnalysisBio,'/analysis/bio')
-API.add_resource(AnalysisComplex, '/analysis/complex')
+API.add_resource(AnalysisVR, '/analysis/vr/request')
+API.add_resource(AnalysisBio,'/analysis/bio/request')
+API.add_resource(AnalysisComplex, '/analysis/complex/request')
+#API.add_resource(Testdb, '/testdb')
 #API.add_resource(CatchAll, '/<path:path>', '/')
-API.add_resource(GetTaskStatus, '/status/<task_id>', '/test_sessions/score/<task_id>', 
-								'/train/<task_id>', '/analysis/<task_id>')
+API.add_resource(GetTaskStatus, '/status/<task_id>', '/test-sessions/score/<task_id>', 
+								'/train/<task_id>', 
+								'/analysis/vr/<task_id>', '/analysis/bio/<task_id>', '/analysis/complex/<task_id>')
 
 if __name__ == '__main__':
     #server.run(host="0.0.0.0", debug=True, port='5000', threaded=True)
     server.run(host="0.0.0.0", debug=True, port='10402', threaded=True)
+    # connect to MongoDB, change the << MONGODB URL >> to reflect your own connection string
+    #client = MongoClient('mongodb://root:example@mongo:27017/')
+    #print('gavno________________________________________________________________________________')
+    #db=client.admin
+    # Issue the serverStatus command and print the results
+    #serverStatusResult=db.command("serverStatus")
+    #pprint(serverStatusResult)
+    
